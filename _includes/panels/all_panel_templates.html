@@ -21,7 +21,7 @@
 	safelog(counting);
 	$(document).ready( function() {
 		safelog('Get all dynamic panels');
-		$('.panel-dynamic-wrap').each( function( index, element ) {
+		$('.panel-wrapper').each( function( index, element ) {
 			var panel = $('#js-hidden-call_congress').html();
 			$(element).html(panel);
 		});

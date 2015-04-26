@@ -83,7 +83,9 @@ hideFromNav: true
     <div class="row">
       <div id="container1" class="chart-holder col-md-4 col-sm-6 col-xs-12"></div>
       <div id="container2" class="chart-holder col-md-4 col-sm-6 col-xs-12"></div>
-      <div id="container3" class="chart-holder col-md-4 col-sm-6 col-xs-12"></div>
+      <div id="container3" class="chart-holder col-md-4 col-sm-6 col-xs-12">
+        {% include panels/panel_counters.html %}
+      </div>
     </div>
   </div>
   <div class="homepage-panel grey">
@@ -138,7 +140,7 @@ hideFromNav: true
   <div class="container">
   <div class="row homepage-panel light three-star">
     <div class="container text-center bottom-form-wrap">
-      <div class="col-md-8 center-block">
+      <div class="col-md-8 center-block panel-wrapper">
         {% include panels/panel_action_w_signup.html hide_next=true %}
       </div>
     </div>
