@@ -1,6 +1,29 @@
+<style>
+.hidden-panel { display:none; }
+</style>
 <div class="hidden-panel" id="js-hidden-signup">{% include panels/panel_action_w_signup.html hide_volunteer=true %}</div>
 <div class="hidden-panel" id="js-hidden-get_educated">{% include panels/panel_action_w_get_educated.html %}</div>
 <div class="hidden-panel" id="js-hidden-spread_the_word">{% include panels/panel_action_w_spread_the_word.html %}</div>
 <div class="hidden-panel" id="js-hidden-call_congress">{% include panels/panel_action_w_call_congress.html %}</div>
 <div class="hidden-panel" id="js-hidden-join_discussion">{% include panels/panel_action_w_join_discussion.html %}</div>
 <div class="hidden-panel" id="js-hidden-volunteer">{% include panels/panel_action_w_volunteer.html %}</div>
+<script src="/js/lib/js.cookie.js"></script>
+<script type="text/javascript">
+	function safelog() {
+		if (console && console.log) {
+			for ( var i=0; i < arguments.length; i++) {
+				console.log(arguments[i]);
+			}
+		}
+	}
+	Cookies.set('testObj','{"one":1,"two":2}', {path: "/"});
+	var counting = JSON.parse(Cookies.get('testObj'));
+	safelog(counting);
+	$(document).ready( function() {
+		safelog('Get all dynamic panels');
+		$('.panel-dynamic-wrap').each( function( index, element ) {
+			var panel = $('#js-hidden-call_congress').html();
+			$(element).html(panel);
+		});
+	});
+</script>
