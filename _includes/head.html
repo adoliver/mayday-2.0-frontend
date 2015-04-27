@@ -37,5 +37,15 @@
   <script src="//maxcdn.bootstrapcdn.com/bootstrap/3.3.2/js/bootstrap.min.js"></script>
   <script src="{{ root_path }}/js/lib/ICanHaz.min.js"></script>
   <script src="{{ root_path }}/js/lib/highcharts.js"></script>
+  <script type="text/javascript">
+    if (typeof mayday == "undefined"){
+      var mayday = {};
+    }
+    if (typeof mayday.global == "undefined"){
+      var mayday.global = {};
+      mayday.global.servicesurl = '{{site.services_url}}';
+    }
+  </script>
+  <script src="{{ root_path }}/js/action_panel.js"></script>
   {{ custom_css }}
 </head>
