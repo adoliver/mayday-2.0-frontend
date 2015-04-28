@@ -63,6 +63,9 @@ if (typeof ActionService == 'undefined') {
 	ActionService.isPiiDefined = function() {
 		return false;
 	};
+	/*
+	Note: this function needs to merge PII with existing local person object without overwriting data.
+	*/
 	ActionService.setLocalPii = function( postData ) {
 		// pull the pii information from the post Data
 		var personStr = ActionService.getLocalPerson();
@@ -106,7 +109,9 @@ if (typeof ActionService == 'undefined') {
 		if ( !currentCache ) {
 			return null;
 		}
-		return currentCache.pop();
+		var cacheObj = currentCache.pop();
+		Cookies.set('activityCache', JSON.stringify(currentCache), {path: "/"});
+		return cacheObj;
 	};
 	/*
 	Loads the user person from local data
