@@ -57,6 +57,8 @@
   $('#js-volunteer-form').on('submit', function(e){
     e.preventDefault();
     $form = $(e.target);
+	console.log('volunteer form');
+	console.log($(e.target).serialize());
     $.post('{{site.services_url}}/people', $(e.target).serialize(), function(data){
       $form.find('button.btn').text('Loading..');
     }).done(function(){

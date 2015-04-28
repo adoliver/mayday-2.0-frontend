@@ -5,42 +5,57 @@ Dependencies:
 if (typeof ActionService == 'undefined') {
 	window.ActionService = {};
 	/*
+	postForm selectively calls the post action or stores form data in cache for later transmission
 	Parameters:
 		$form : jquery object wrapper of the form DOM element
 		hasPii : flag to notify that the Post should assume that $form contains pii
 	*/
-	ActionService.postForm = function ($form, hasPii) {
+	ActionService.postForm = function (api, hasPii, $form, successFunc, doneFunc, errorFunc) {
+		// Provide default dummy functions
+		if (!successFunc) successFunc = function(){};
+		if (!doneFunc) doneFunc = function(){};
+		if (!errorFunc) errorFunc = function(){};
+
 		var postData = ActionService.formatPostData($form);
+
+		ActionService.postFormRaw(api, hasPii, postData, successFunc, doneFunc, errorFunc);
+	};
+	ActionService.postFormRaw = function(api, hasPii, postData, successFunc, doneFunc, errorFunc) {
 		// The post data may contain pii. Otherwise only post if we already have pii locally
 		if (hasPii || ActionService.isPiiDefined()){
+			// Send the current post action
 			ActionService.setLocalPii( postData );
-			    $.post(mayday.global.servicesurl+'/action', $(e.target).serialize(), function(data){
-			      $form.find('button.btn').text('Loading..');
-			    }).done(function(){
-			      if(location.pathname == '/take-action/'){
-				$next = $form.parents('li').next();
-				$parent = $form.parents('li');
-				setAsComplete($parent);
-				makeActive($next);
-			      }else{
-				location = '/take-action/#get-educated'
-			      }
-			    });
+			    $.post(mayday.global.servicesurl+'/'+api, postData, successFunc, errorFunc).done(doneFunc);
+			// Store the PII locally
+			ActionService.setLocalPii( postData );
 		} else {
-			ActionService.cacheActivityPost( postData );
+			var postObj = {};
+			postObj.api = api;
+			postObj.hasPii = hasPii;
+			postObj.postData = postData;
+			ActionService.cacheActivityPost( postObj );
+		}
+	};
+	ActionService.processActivityCache(){
+		var postObj = ActionService.popActivityCache();
+		if (postObj) {
+			ActionService.postFormRaw(postObj.api, postObj.hasPii, postObj.postData,
+			function() {
+				// Process next item in cache
+				ActionService.processActivityCache();
+			}, 
+			function() {},
+			function() {
+				// On error store object back in the cache
+				ActionService.cachActivityPost( postObj );
+			});
 		}
 	};
 	/*
-	Convert the form jquery object to a simple object for post call.
 	Any data transformations to match backend API requirements should be done here.
 	*/
 	ActionService.formatPostData = function( $form ) {
-		var postData = {};
-		// Loop through each input element
-		$form.find('input').each( function( index, element ) {
-			var $element = $(element);
-			postData[$element.name] = $element.value();
-		});
+		return $form.serialize();
 	};
 	/*
 	Checks if local data has pii stored
@@ -50,7 +65,7 @@ if (typeof ActionService == 'undefined') {
 	};
 	ActionService.setLocalPii = function( postData ) {
 		// pull the pii information from the post Data
-		var personStr = Cookies.get( 'maydayPerson' );
+		var personStr = ActionService.getLocalPerson();
 		var personObj = {};
 		if ( personStr ) {
 			personObj = JSON.parse( personStr );
@@ -61,11 +76,11 @@ if (typeof ActionService == 'undefined') {
 		if ( postData.email ) {
 			personObj.email = postData.email;
 		}
-		Cookies.set( 'maydayPerson', JSON.stringify( personObj ), {path: "/"});
+		ActionService.setLocalPerson( personObj );
 	};
 	ActionService.getPii = function() {
 		var piiObj = null;
-		var str = Cookies.get( 'maydayPerson' );
+		var str = ActionService.getLocalPerson();
 		if ( str ) {
 			personObj = JSON.parse( str );
 			if ( personObj && personObj.uuid ) {
@@ -79,12 +94,19 @@ if (typeof ActionService == 'undefined') {
 	};
 	ActionService.cacheActivityPost = function ( postData ) {
 		// post data in a cache to replay later.
-		var currentCache = JSON.pars(Cookies.get('activityCache'));
+		var currentCache = JSON.parse(Cookies.get('activityCache'));
 		if ( !currentCache ) { // start a new cache if not found
 			currentCache = [];
 		}
 		currentCache.push( postData );
 		Cookies.set( 'activityCache', JSON.stringify( currentCache ), {path: "/"} );
+	};
+	ActiionService.popActivityCache = function () {
+		var currentCache = JSON.parse(Cookies.get('activityCache'));
+		if ( !currentCache ) {
+			return null;
+		}
+		return currentCache.pop();
 	};
 	/*
 	Loads the user person from local data
@@ -95,16 +117,22 @@ if (typeof ActionService == 'undefined') {
 		if ( personStr ) {
 			personObj = JSON.parse( personStr );
 		} else {
+			personObj = ActionService.getDefaultPerson();
 		}
 		return personObj;
+	};
+	/*
+	Set user in local data
+	*/
+	ActionService.setLocalPerson = function ( personObj ) {
+		Cookies.set( 'maydayPerson', JSON.stringify( personObj ), {path: "/"});
 	};
 	/*
 	Formats the post request to get a person object form back-end.
 	Person objects from the back-end will be missing pii
 	*/
-	ActionService.getStoredPerson = function(piitype, pii, successFunc) {
-		var data = {piitype : pii};
-		$.post(mayday.global.servicesurl+'/action', data, successFunc);
+	ActionService.requestStoredPerson = function(pii, successFunc, errorFunc) {
+		$.get(mayday.global.servicesurl+'/people/' + pii, successFunc, errorFunc);
 	};
 	/*
 	Intended to be triggered during the onready event
@@ -121,26 +149,78 @@ if (typeof ActionService == 'undefined') {
 		});
 	};
 	/*
-	Loads the next activity from the local data otherwise gets generic from server
+	Retrieve the starting orderIndex from the list of actions
 	*/
-	ActionService.getNextActivity = function() {
-		var nextActivity = null; //TODO: change this to be a default activity
-		var personObj = ActionService.getLocalPerson();
-		if (!personObj) {
-			// load generic person object from server
-		}
-		if (personObj && personObj.activities) {
-			var weight = null;
-			var index = null;
-			// lowest weight gets highest priority
-			for (var i=0; i < personObj.activities.length; i++){
-				if ( weight === null || personObj.activities[i].weight < weight) {
-					weight = personObj.activities[i].weight;
-					index = i;
+	ActionService.getInitialActivity = function(){
+		var initialIndex;
+		if ( ActionService.hasOwnProperty('initialActionIndex') ) {
+			initialIndex = ActionService.initialActionIndex;
+			
+		} else {
+			var personObj = ActionService.getLocalPerson();
+			var actionList = personObj.activities;
+			initialIndex = null;
+			for (var i=0; i < actionList.length; i++) {
+				if (initialIndex == null || actionList[i].order < initialIndex) {
+					initialIndex = actionList[i].order;
 				}
 			}
-			var nextActivity = personObj.activities[i];
+			ActionService.initialActionIndex = initialIndex;
 		}
-		return nextActivity;
+		return initialIndex;
+	};
+	/*
+	Loads the next activity from the local data otherwise gets generic from server
+	Assumptions:
+		* the activity order properties start at 1 and increment by one with no missing order values from Min to Max.
+	*/
+	ActionService.getNextActivity = function(includeCompleted, takeNextHighest) {
+		var nextActivity = null;
+		var activityIndex; // target activity
+		var personObj = ActionService.getLocalPerson();
+		var activityIndexStr = Cookies.get('maydayActivityIndex'); // ActivityIndex tracks the next activity order to display
+		if (activityIndexStr) {
+			activityIndex = JSON.parse( activityIndexStr );
+		} else {
+			activityIndex = ActionService.getInitialActivity();
+		}
+		var activityDisplayCount;
+		var activityDisplayCountStr = Cookies.get('maydayActivityDisplayCount'); // Number of times the current activity has been displayed
+		if (activityDisplayCountStr) {
+			activityDisplayCount = JSON.parse(activityDisplayCountStr);
+		} else {
+			activityDisplayCount = 0;
+		}
+
+		// Advance the activity index if needed
+		if (activityDisplayCount > 1) {
+			activityDisplayCount = 0; // Reset display count
+			activityIndex += 1;
+			// Store the new index
+			Cookies.set( 'maydayActivityIndex', JSON.stringify( activityIndex ), {path: "/"} );
+			// Store the new display count
+			Cookies.set( 'maydayActivityDisplayCount', JSON.stringify( activityDisplayCount ), {path: "/"});
+			// Recurse this function call now that the data has been updated.
+			return ActivityService.getNextActivity();
+		} else { // search for the index in activities
+			if (personObj && personObj.activities) {
+				// lowest weight gets highest priority
+				var activity = null;
+				for (var i=0; i < personObj.activities.length; i++){
+					activity = personObj.activities[i];
+					if (!activity.completed || includeCompleted){
+						if (activity.order == activityIndex) {
+							nextActivity = activity;
+							return nextActivity;
+						}
+					}
+				}
+			}
+			return nextActivity;
+		}
+	};
+	ActionService.getDefaultPerson = function() {
+		var person = {};
+		return person;
 	};
 }

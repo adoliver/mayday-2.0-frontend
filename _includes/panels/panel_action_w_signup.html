@@ -63,7 +63,7 @@
     e.preventDefault();
     $form = $(e.target);
 	console.log('send form data.');
-	console.log($form);
+	console.log($(e.target).serialize());
     $.post('{{site.services_url}}/actions', $(e.target).serialize(), function(data){
       $form.find('button.btn').text('Loading..');
 	console.log('success');
