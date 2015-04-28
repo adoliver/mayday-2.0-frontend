@@ -125,6 +125,10 @@ if (typeof ActionService == 'undefined') {
 	Set user in local data
 	*/
 	ActionService.setLocalPerson = function ( personObj ) {
+		// Make sure that activity list is ordered from low to by by the order property
+		personObj.activities = personObj.activities.sort(function(a,b) {
+			return a.order - b.order;
+		});
 		Cookies.set( 'maydayPerson', JSON.stringify( personObj ), {path: "/"});
 	};
 	/*
@@ -151,20 +155,14 @@ if (typeof ActionService == 'undefined') {
 	/*
 	Retrieve the starting orderIndex from the list of actions
 	*/
-	ActionService.getInitialActivity = function(){
+	ActionService.getInitialActivityIndex = function(){
 		var initialIndex;
 		if ( ActionService.hasOwnProperty('initialActionIndex') ) {
 			initialIndex = ActionService.initialActionIndex;
 			
 		} else {
 			var personObj = ActionService.getLocalPerson();
-			var actionList = personObj.activities;
-			initialIndex = null;
-			for (var i=0; i < actionList.length; i++) {
-				if (initialIndex == null || actionList[i].order < initialIndex) {
-					initialIndex = actionList[i].order;
-				}
-			}
+			initialIndex = personObj.activities[0].order;
 			ActionService.initialActionIndex = initialIndex;
 		}
 		return initialIndex;
@@ -172,17 +170,17 @@ if (typeof ActionService == 'undefined') {
 	/*
 	Loads the next activity from the local data otherwise gets generic from server
 	Assumptions:
-		* the activity order properties start at 1 and increment by one with no missing order values from Min to Max.
+		* the activity list has already been sorted by order property from low to high
+		* there are no duplicate order properties
 	*/
-	ActionService.getNextActivity = function(includeCompleted, takeNextHighest) {
+	ActionService.getNextActivity = function() {
 		var nextActivity = null;
 		var activityIndex; // target activity
-		var personObj = ActionService.getLocalPerson();
 		var activityIndexStr = Cookies.get('maydayActivityIndex'); // ActivityIndex tracks the next activity order to display
 		if (activityIndexStr) {
 			activityIndex = JSON.parse( activityIndexStr );
 		} else {
-			activityIndex = ActionService.getInitialActivity();
+			activityIndex = 0;
 		}
 		var activityDisplayCount;
 		var activityDisplayCountStr = Cookies.get('maydayActivityDisplayCount'); // Number of times the current activity has been displayed
@@ -194,29 +192,56 @@ if (typeof ActionService == 'undefined') {
 
 		// Advance the activity index if needed
 		if (activityDisplayCount > 1) {
-			activityDisplayCount = 0; // Reset display count
-			activityIndex += 1;
 			// Store the new index
+			activityIndex = ActivityService.getNextActivityIndex(activityIndex+1);
 			Cookies.set( 'maydayActivityIndex', JSON.stringify( activityIndex ), {path: "/"} );
+
 			// Store the new display count
+			activityDisplayCount = 0; // Reset display count
 			Cookies.set( 'maydayActivityDisplayCount', JSON.stringify( activityDisplayCount ), {path: "/"});
-			// Recurse this function call now that the data has been updated.
-			return ActivityService.getNextActivity();
-		} else { // search for the index in activities
-			if (personObj && personObj.activities) {
-				// lowest weight gets highest priority
-				var activity = null;
-				for (var i=0; i < personObj.activities.length; i++){
-					activity = personObj.activities[i];
-					if (!activity.completed || includeCompleted){
-						if (activity.order == activityIndex) {
-							nextActivity = activity;
-							return nextActivity;
-						}
+
+			var personObj = ActionService.getLocalPerson();
+			nextActivity = personObj.activities[activityIndex];
+		} else { 
+			// Store the new display count
+			activityDisplayCount += 1;
+			Cookies.set( 'maydayActivityDisplayCount', JSON.stringify( activityDisplayCount ), {path: "/"});
+
+			var personObj = ActionService.getLocalPerson();
+			nextActivity = personObj.activities[activityIndex];
+		}
+		return nextActivity;
+	};
+	ActionService.getNextActivityIndex = function (nextIndex) {
+		var personObj = ActionService.getLocalPerson();
+		var activity = null;
+		var activityList = personObj.activities;
+		if ( nextIndex < activityList.length ) {
+			activity = activityList[nextIndex];
+			if (!activity.complete) {
+				return nextIndex;
+			} else {
+				// find next incommplete activity
+				for (var i=nextIndex; i < activityList.length; i++){
+					if (!activityList[i].complete) {
+						return i;
 					}
 				}
+				// start search from beginning of list
+				for (var i=0; i < nextIndex; i++){
+					if (!activityList[i].complete) {
+						return i;
+					}
+				}
+				// include complete activities
+				if (nextIndex < activityList.length){
+					return nextIndex;
+				} else {
+					return 0;
+				}
 			}
-			return nextActivity;
+		} else {
+			return 0;
 		}
 	};
 	ActionService.getDefaultPerson = function() {
