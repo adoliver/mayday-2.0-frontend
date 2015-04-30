@@ -46,7 +46,15 @@
       mayday.global = {};
     }
     mayday.global.servicesurl = '{{site.services_url}}';
+	function safelog() {
+		if (console && console.log) {
+			for ( var i=0; i < arguments.length; i++) {
+				console.log(arguments[i]);
+			}
+		}
+	}
   </script>
+  <script src="{{ root_path }}/js/lib/js.cookie.js"></script>
   <script src="{{ root_path }}/js/action_panel.js"></script>
   {{ custom_css }}
 </head>

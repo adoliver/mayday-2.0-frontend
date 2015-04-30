@@ -11,24 +11,53 @@ if (typeof ActionService == 'undefined') {
 		hasPii : flag to notify that the Post should assume that $form contains pii
 	*/
 	ActionService.postForm = function (api, hasPii, $form, successFunc, doneFunc, errorFunc) {
-		// Provide default dummy functions
-		if (!successFunc) successFunc = function(){};
-		if (!doneFunc) doneFunc = function(){};
-		if (!errorFunc) errorFunc = function(){};
-
 		var postData = ActionService.formatPostData($form);
 
+		// Provide default dummy functions
+		if (!successFunc) { safelog('no successFunc'); successFunc = function(){}; }
+		if (!doneFunc) { safelog('no doneFunc'); doneFunc = function(){}; }
+		if (!errorFunc) {
+			safelog('no errorFunc');
+			errorFunc = function(){
+				safelog('postError', postData);
+				ActionService.cacheActivityPost( postData );
+			};
+		}
+
+		ActionService.postFormLocal(api, hasPii, $form);
 		ActionService.postFormRaw(api, hasPii, postData, successFunc, doneFunc, errorFunc);
+	};
+	ActionService.postFormLocal = function(api, hasPii, $element) {
+		safelog('postFormLocal $form',$form);
+		// retrieve Pii
+		var first_name = $form.find('#person\\[first_name\\]').val();
+		if (first_name) { ActionService.setLocalPii( 'first_name', first_name ); }
+		else safelog( 'first_name not found' );
+
+		var last_name = $form.find('#person\\[last_name\\]').val();
+		if (last_name) { ActionService.setLocalPii( 'last_name', last_name ); }
+		else safelog( 'last_name not found' );
+
+		var email = $form.find('#person\\[email\\]').val();
+		if (email) { ActionService.setLocalPii( 'email', email ); }
+		else safelog( 'email not found' );
+
+		var phone = $form.find('#person\\[phone\\]').val();
+		if (phone) { ActionService.setLocalPii( 'phone', phone ); }
+		else safelog( 'phone not found' );
+		
+		// set the activity as complete
+		var template_id = $form.find('input[name="template_id"]');
+		//ActionService.completeActivity( template_id );
 	};
 	ActionService.postFormRaw = function(api, hasPii, postData, successFunc, doneFunc, errorFunc) {
 		// The post data may contain pii. Otherwise only post if we already have pii locally
 		if (hasPii || ActionService.isPiiDefined()){
+		safelog('make jquery post call');
 			// Send the current post action
-			ActionService.setLocalPii( postData );
-			    $.post(mayday.global.servicesurl+'/'+api, postData, successFunc, errorFunc).done(doneFunc);
-			// Store the PII locally
-			ActionService.setLocalPii( postData );
+			$.post(mayday.global.servicesurl+'/'+api, postData, successFunc).fail(errorFunc).done(doneFunc);
 		} else {
+		safelog('cache activity');
 			var postObj = {};
 			postObj.api = api;
 			postObj.hasPii = hasPii;
@@ -36,7 +65,7 @@ if (typeof ActionService == 'undefined') {
 			ActionService.cacheActivityPost( postObj );
 		}
 	};
-	ActionService.processActivityCache(){
+	ActionService.processActivityCache = function(){
 		var postObj = ActionService.popActivityCache();
 		if (postObj) {
 			ActionService.postFormRaw(postObj.api, postObj.hasPii, postObj.postData,
@@ -66,19 +95,11 @@ if (typeof ActionService == 'undefined') {
 	/*
 	Note: this function needs to merge PII with existing local person object without overwriting data.
 	*/
-	ActionService.setLocalPii = function( postData ) {
+	ActionService.setLocalPii = function( type, value) {
+		safelog( 'setLocalPii()', type, value);
 		// pull the pii information from the post Data
-		var personStr = ActionService.getLocalPerson();
-		var personObj = {};
-		if ( personStr ) {
-			personObj = JSON.parse( personStr );
-		}
-		if ( postData.uuid ) {
-			personObj.uuid = postData.uuid;
-		}
-		if ( postData.email ) {
-			personObj.email = postData.email;
-		}
+		var personObj = ActionService.getLocalPerson();
+		personObj[type] = value;
 		ActionService.setLocalPerson( personObj );
 	};
 	ActionService.getPii = function() {
@@ -104,7 +125,7 @@ if (typeof ActionService == 'undefined') {
 		currentCache.push( postData );
 		Cookies.set( 'activityCache', JSON.stringify( currentCache ), {path: "/"} );
 	};
-	ActiionService.popActivityCache = function () {
+	ActionService.popActivityCache = function () {
 		var currentCache = JSON.parse(Cookies.get('activityCache'));
 		if ( !currentCache ) {
 			return null;
@@ -112,6 +133,18 @@ if (typeof ActionService == 'undefined') {
 		var cacheObj = currentCache.pop();
 		Cookies.set('activityCache', JSON.stringify(currentCache), {path: "/"});
 		return cacheObj;
+	};
+	ActionService.completeAction = function( template_id ) {
+		personObj = ActionService.getLocalPerson();
+		// set completed array
+		personObj.completed_activities.push( template_id );
+		// set completed property on activity
+		for (var i=0; i < personObj.activities.length; i++) {
+			if (personObj.activities[i].template_id == template_id) {
+				personObj.activities[i].complete = true;
+			}
+		}
+		ActionService.setLocalPerson( personObj );
 	};
 	/*
 	Loads the user person from local data
@@ -152,10 +185,6 @@ if (typeof ActionService == 'undefined') {
 	*/
 	ActionService.loadDynamicPanels = function() {
 		safelog('Get all dynamic panels');
-		$('.panel-wrapper').each( function( index, element ) {
-			var panel = $('#js-hidden-call_congress').html();
-			$(element).html(panel);
-		});
 	};
 	/*
 	Retrieve the starting orderIndex from the list of actions
@@ -183,10 +212,11 @@ if (typeof ActionService == 'undefined') {
 		var activityIndex; // target activity
 		var activityIndexStr = Cookies.get('maydayActivityIndex'); // ActivityIndex tracks the next activity order to display
 		if (activityIndexStr) {
-			activityIndex = JSON.parse( activityIndexStr );
+			activityIndex = JSON.parse(activityIndexStr);
 		} else {
 			activityIndex = 0;
 		}
+
 		var activityDisplayCount;
 		var activityDisplayCountStr = Cookies.get('maydayActivityDisplayCount'); // Number of times the current activity has been displayed
 		if (activityDisplayCountStr) {
@@ -198,59 +228,101 @@ if (typeof ActionService == 'undefined') {
 		// Advance the activity index if needed
 		if (activityDisplayCount > 1) {
 			// Store the new index
-			activityIndex = ActivityService.getNextActivityIndex(activityIndex+1);
-			Cookies.set( 'maydayActivityIndex', JSON.stringify( activityIndex ), {path: "/"} );
+			activityIndex = ActionService.getNextActivityIndex(activityIndex);
+			Cookies.set( 'maydayActivityIndex', JSON.stringify(activityIndex), {path: "/"} );
 
-			// Store the new display count
 			activityDisplayCount = 0; // Reset display count
-			Cookies.set( 'maydayActivityDisplayCount', JSON.stringify( activityDisplayCount ), {path: "/"});
 
-			var personObj = ActionService.getLocalPerson();
-			nextActivity = personObj.activities[activityIndex];
-		} else { 
-			// Store the new display count
-			activityDisplayCount += 1;
-			Cookies.set( 'maydayActivityDisplayCount', JSON.stringify( activityDisplayCount ), {path: "/"});
-
-			var personObj = ActionService.getLocalPerson();
-			nextActivity = personObj.activities[activityIndex];
 		}
+
+		activityDisplayCount += 1; // effectively starts at index 1
+		// Store the new display count
+		Cookies.set( 'maydayActivityDisplayCount',  JSON.stringify(activityDisplayCount), {path: "/"});
+
+		var personObj = ActionService.getLocalPerson();
+		nextActivity = personObj.activities[activityIndex];
 		return nextActivity;
 	};
-	ActionService.getNextActivityIndex = function (nextIndex) {
+	ActionService.getNextActivityIndex = function (currentIndex, includeComplete) {
+		safelog('getNextActivityIndex()', currentIndex, includeComplete);
+		var nextIndex = currentIndex + 1;
 		var personObj = ActionService.getLocalPerson();
 		var activity = null;
 		var activityList = personObj.activities;
-		if ( nextIndex < activityList.length ) {
-			activity = activityList[nextIndex];
-			if (!activity.complete) {
-				return nextIndex;
-			} else {
-				// find next incommplete activity
-				for (var i=nextIndex; i < activityList.length; i++){
-					if (!activityList[i].complete) {
-						return i;
-					}
-				}
-				// start search from beginning of list
-				for (var i=0; i < nextIndex; i++){
-					if (!activityList[i].complete) {
-						return i;
-					}
-				}
-				// include complete activities
-				if (nextIndex < activityList.length){
-					return nextIndex;
+		/* loop through all to end of list */
+		for (var i=nextIndex; i < activityList.length; i++) {
+			activity = activityList[i];
+			if (!activity.complete | includeComplete) {
+				safelog('found incomplete activity',activity);
+				if ( activity.template_id != 'sign-letter') { // hack to keep sign-letter panel out of dynamic panel rotation
+					safelog('found next index = ' + nextIndex);
+					return i;
 				} else {
-					return 0;
+					safelog('skip over sign-letter');
 				}
 			}
+		}
+		/* loop through list coming full circle */
+		for (var j=0; j < nextIndex; j++) {
+			activity = activityList[j];
+			if (!activity.complete | includeComplete) {
+				if ( activity.template_id != 'sign-letter') { // hack to keep sign-letter panel out of dynamic panel rotation
+					safelog('found next index = ' + nextIndex);
+					return j;
+				} else {
+					safelog('skip over sign-letter');
+				}
+			}
+		}
+		/* search again including completed activities */
+		if (!includeComplete) {
+			return ActionService.getNextActivityIndex(currentIndex, true);
 		} else {
+			/* something weird has happened, but default to index 0 */
+			safelog('WEIRD ERROR');
 			return 0;
 		}
 	};
 	ActionService.getDefaultPerson = function() {
-		var person = {};
-		return person;
+		return ActionService.person_default;
+	};
+	ActionService.person_default = {
+		"uuid":null,
+		"first_name":null,
+		"last_name":null,
+		"is_volunteer":null,
+		"completed_activities":[],
+		"activities":[
+			{
+				"name":"sign up form",
+				"sort_order":1,
+				"template_id":"sign-up-form"
+			},
+			{
+				"name":"call congress",
+				"sort_order":2,
+				"template_id":"call-congress"
+			},
+			{
+				"name":"volunteer form",
+				"sort_order":3,
+				"template_id":"volunteer-form"
+			},
+			{
+				"name":"sign letter",
+				"sort_order":4,
+				"template_id":"sign-letter"
+			},
+			{
+				"name":"join discussion",
+				"sort_order":5,
+				"template_id":"join-discussion"
+			},
+			{
+				"name":"spread the word",
+				"sort_order":6,
+				"template_id":"spread-the-word"
+			}
+		]
 	};
 }
