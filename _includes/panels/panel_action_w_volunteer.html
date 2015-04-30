@@ -5,26 +5,26 @@
   </div>
   <div class="panel-body">
     <h2>Volunteer</h2>
-    <p>Be part of the movement to restore our democracy. </p>
+    <p>Be a leader in the movement to repair our republic.</p>
     <form class="row" id="js-volunteer-form">
       <fieldset class="col-md-12">
 
-      <div class="form-group col-md-6">
+      <div class="form-group col-md-6 form-left">
         <label class="control-label sr-only" for="person[first_name]">First Name</label>
         <input id="person[first_name]" name="person[first_name]" type="text" placeholder="First Name">
       </div>
 
-      <div class="form-group col-md-6">
+      <div class="form-group col-md-6 form-right">
         <label class="control-label sr-only" for="person[last_name]">Last Name</label>
         <input id="person[last_name]" name="person[last_name]" type="text" placeholder="Last Name">
       </div>
 
-      <div class="form-group col-md-8">
+      <div class="form-group col-md-8 form-left">
         <label class="control-label sr-only" for="person[email]">Email Address</label>
         <input id="person[email]" name="person[email]" type="text" placeholder="Email Address" required="">
       </div>
 
-      <div class="form-group col-md-4">
+      <div class="form-group col-md-4 form-right">
         <label class="control-label sr-only" for="person[zip]">ZIP Code</label>
         <input id="person[zip]" name="person[zip]" pattern="\d{5,5}(-\d{4,4})?" type="text" placeholder="ZIP Code">
       </div>
@@ -57,10 +57,8 @@
   $('#js-volunteer-form').on('submit', function(e){
     e.preventDefault();
     $form = $(e.target);
-	console.log('volunteer form');
-	console.log($(e.target).serialize());
+    $form.find('button.btn').html('<i class="fa fa-refresh fa-spin"></i> Loading..');
     $.post('{{site.services_url}}/people', $(e.target).serialize(), function(data){
-      $form.find('button.btn').text('Loading..');
     }).done(function(){
       if(location.pathname == '/take-action/'){
         $parent = $form.parents('li');

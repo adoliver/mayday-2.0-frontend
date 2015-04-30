@@ -1,7 +1,7 @@
 
 .spacer-opening{
-  padding-top:60px;
-  padding-bottom:30px;
+  padding-top:10px;
+  padding-bottom:10px;
   @include small-desktop{
     padding-top:20px;
     padding-bottom:10px;
@@ -23,7 +23,7 @@
 // banner image is in the 1170 page margin
 
 .full-bg-imgage, .banner-image{
-  background-color: #818181;
+  background-color: #061C29;
   background-repeat: no-repeat;
   overflow: hidden;
 }
@@ -32,17 +32,45 @@
   padding-top:0 !important;
   padding-bottom:0 !important;
   width: 100%;
-  background-image: url("../images/temp-img/screenshot_04_flipped.jpg");
-  background-size: 200%;
+  position:relative;
   @include phone{
     margin-top: -50px !important;
   }
+  @include tablet-minus{
+    background: url("/images/campaigns/20150429-hero-bg.jpg") 0 0 no-repeat;
+    background-size: cover;
+  }
 }
 .banner-image {
-  padding-top:30px;
+  padding-top:20px;
+  box-shadow: 0 0 50px rgba(22,33,63,0.7);
   padding-bottom:15px;
-  background-image: url("../images/temp-img/screenshot_04_flipped.jpg");
-  background-size: 100%;
+  background: url("/images/campaigns/20150429-hero-bg.jpg") 0 0 no-repeat;
+  position:relative;
+  background-size: cover;
+  z-index: 5;
+  >.row{
+    background: url("/images/campaigns/20150429-hero-white.png") 0 0 no-repeat;
+    background-size: contain;
+  }
+
+  @include tablet-minus{
+    background-image:none;
+    box-shadow: none;
+    >.row{background-image:none;}
+  }
+}
+.background-image-blurred{
+  filter: url(blur.svg#blur); -webkit-filter: blur(3px); filter: blur(3px);
+  background: url("/images/campaigns/20150429-hero-bg.jpg") 0 -3px no-repeat;
+  position:absolute;
+  width:100%;
+  height:100%;
+  z-index: 1;
+  background-size: cover;
+  @include tablet-minus{
+    display:none;
+  }
 }
 .index-logo-small{
   @include phone{
@@ -50,18 +78,7 @@
     margin: 0 auto;
   }
 }
-.mini-panel-text{
-  padding-left:0 !important;
-  letter-spacing: .2px;
-  line-height: 22px;
-  font-size: 16px;
-  @include tablet{
-    margin-top: 8px;
-  }
-  @include phone{
-    font-size: 18px;
-  }
-}
+
 .homepage-panel{
   position: relative;
   overflow: hidden;
@@ -72,14 +89,6 @@
   .container{
     padding-top:0;
     padding-bottom:0;
-  }
-  .logo-img-center{
-    @include phone{
-      height: 45px;
-      display:block;
-      margin:0 auto 4px;
-
-    }
   }
 
   .homepage-panel-body{
@@ -111,213 +120,85 @@
     }
   }
   &.grey{
-    background-color: $color-grey-backgroud;
+    background-color: $color-grey-background;
   }
   &.light {
   }
 
+  .bg-star{
+    position: absolute;
+  }
+
   &.ten-star {
     .bg-star:first-of-type {
-      position: absolute;
       left: -400px;
       top: -250px;
       height: 650px;
       opacity: .03;
-      -ms-transform: rotate(-30deg);
-      -webkit-transform: rotate(-30deg);
-      transform: rotate(-30deg);
+      @include star-rotation(-30deg);
     }
     .bg-star:nth-of-type(2) {
-      position: absolute;
       left: -500px;
       top: 80px;
       height: 800px;
       opacity: .03;
-      -ms-transform: rotate(-50deg);
-      -webkit-transform: rotate(-50deg);
-      transform: rotate(-50deg);
+      @include star-rotation(-50deg);
     }
     .bg-star:nth-of-type(3) {
-      position: absolute;
       left: 10%;
       top: -160px;
       height: 265px;
       opacity: .03;
-      -ms-transform: rotate(-50deg);
-      -webkit-transform: rotate(-50deg);
-      transform: rotate(-50deg);
+      @include star-rotation(-50deg);
     }
     .bg-star:nth-of-type(4) {
-      position: absolute;
       left: 1%;
       top: -70px;
       width: 600px;
       opacity: .015;
-      -ms-transform: rotate(35deg);
-      -webkit-transform: rotate(35deg);
-      transform: rotate(35deg);
+      @include star-rotation(35deg);
     }
     .bg-star:nth-of-type(5) {
-      position: absolute;
       left: 25%;
       top: -200px;
       height: 350px;
       opacity: .03;
-      -ms-transform: rotate(35deg);
-      -webkit-transform: rotate(35deg);
-      transform: rotate(35deg);
+      @include star-rotation(35deg);
     }
     .bg-star:nth-of-type(6) {
-      position: absolute;
       left: 25%;
       top: 260px;
       height: 350px;
       opacity: .02;
-      -ms-transform: rotate(35deg);
-      -webkit-transform: rotate(35deg);
-      transform: rotate(35deg);
+      @include star-rotation(35deg);
     }
     .bg-star:nth-of-type(7) {
-      position: absolute;
       left: 35%;
       top: 100px;
       height: 200px;
       opacity: .02;
-      -ms-transform: rotate(-50deg);
-      -webkit-transform: rotate(-50deg);
-      transform: rotate(-50deg);
+      @include star-rotation(-50deg);
     }
     .bg-star:nth-of-type(8) {
-      position: absolute;
       left: 33%;
       top: -180px;
       height: 850px;
       opacity: .03;
-      -ms-transform: rotate(35deg);
-      -webkit-transform: rotate(35deg);
-      transform: rotate(35deg);
+      @include star-rotation(35deg);
     }
     .bg-star:nth-of-type(9) {
-      position: absolute;
       left: 76%;
       top: -170px;
       height: 600px;
       opacity: .03;
-      -ms-transform: rotate(40deg);
-      -webkit-transform: rotate(40deg);
-      transform: rotate(40deg);
+      @include star-rotation(40deg);
     }
     .bg-star:nth-of-type(10) {
-      position: absolute;
       left: 82%;
       top: 275px;
       height: 200px;
       opacity: .04;
-      -ms-transform: rotate(-15deg);
-      -webkit-transform: rotate(-15deg);
-      transform: rotate(-15deg);
-    }
-  }
-  &.dossier-star {
-    .bg-star:first-of-type {
-      position: absolute;
-      left: -400px;
-      top: -250px;
-      height: 650px;
-      opacity: .1;
-      -ms-transform: rotate(-30deg);
-      -webkit-transform: rotate(-30deg);
-      transform: rotate(-30deg);
-    }
-    .bg-star:nth-of-type(2) {
-      position: absolute;
-      left: -500px;
-      top: 80px;
-      height: 800px;
-      opacity: 0;
-      -ms-transform: rotate(-50deg);
-      -webkit-transform: rotate(-50deg);
-      transform: rotate(-50deg);
-    }
-    .bg-star:nth-of-type(3) {
-      position: absolute;
-      left: 10%;
-      top: -160px;
-      height: 265px;
-      opacity: 0;
-      -ms-transform: rotate(-50deg);
-      -webkit-transform: rotate(-50deg);
-      transform: rotate(-50deg);
-    }
-    .bg-star:nth-of-type(4) {
-      position: absolute;
-      left: 1%;
-      top: -70px;
-      width: 600px;
-      opacity: 0;
-      -ms-transform: rotate(35deg);
-      -webkit-transform: rotate(35deg);
-      transform: rotate(35deg);
-    }
-    .bg-star:nth-of-type(5) {
-      position: absolute;
-      left: 25%;
-      top: -200px;
-      height: 350px;
-      opacity: 0;
-      -ms-transform: rotate(35deg);
-      -webkit-transform: rotate(35deg);
-      transform: rotate(35deg);
-    }
-    .bg-star:nth-of-type(6) {
-      position: absolute;
-      left: 25%;
-      top: 260px;
-      height: 350px;
-      opacity: .01;
-      -ms-transform: rotate(35deg);
-      -webkit-transform: rotate(35deg);
-      transform: rotate(35deg);
-    }
-    .bg-star:nth-of-type(7) {
-      position: absolute;
-      left: 35%;
-      top: 100px;
-      height: 200px;
-      opacity: .1;
-      -ms-transform: rotate(-50deg);
-      -webkit-transform: rotate(-50deg);
-      transform: rotate(-50deg);
-    }
-    .bg-star:nth-of-type(8) {
-      position: absolute;
-      left: 33%;
-      top: -180px;
-      height: 850px;
-      opacity: .1;
-      -ms-transform: rotate(35deg);
-      -webkit-transform: rotate(35deg);
-      transform: rotate(35deg);
-    }
-    .bg-star:nth-of-type(9) {
-      position: absolute;
-      left: 76%;
-      top: -170px;
-      height: 600px;
-      opacity: 0;
-      -ms-transform: rotate(40deg);
-      -webkit-transform: rotate(40deg);
-      transform: rotate(40deg);
-    }
-    .bg-star:nth-of-type(10) {
-      position: absolute;
-      left: 82%;
-      top: 275px;
-      height: 200px;
-      opacity: .1;
-      -ms-transform: rotate(-15deg);
-      -webkit-transform: rotate(-15deg);
-      transform: rotate(-15deg);
+      @include star-rotation(-15deg);
     }
   }
 
@@ -326,67 +207,50 @@
 
   &.two-star {
     .bg-star:first-of-type {
-      position: absolute;
       left: -35%;
       top: -450px;
       height: 1500px;
       opacity: .04;
-      -ms-transform: rotate(20deg);
-      -webkit-transform: rotate(20deg);
-      transform: rotate(20deg);
+      @include star-rotation(20deg);
     }
     .bg-star:nth-of-type(2) {
-      position: absolute;
       left: 35%;
       top: -750px;
       height: 1500px;
       opacity: .04;
-      -ms-transform: rotate(-10deg);
-      -webkit-transform: rotate(-10deg);
-      transform: rotate(-10deg);
+      @include star-rotation(-10deg);
     }
   }
 
   &.three-star {
     .bg-star:first-of-type {
-      position: absolute;
       left: -35%;
       top: -450px;
       height: 1500px;
       opacity: .04;
-      -ms-transform: rotate(-10deg);
-      -webkit-transform: rotate(-10deg);
-      transform: rotate(-10deg);
+      @include star-rotation(-10deg);
       z-index: 0;
     }
     .bg-star:nth-of-type(2) {
-      position: absolute;
       left: 40%;
       top: 200px;
       height: 1000px;
       opacity: .04;
-      -ms-transform: rotate(-20deg);
-      -webkit-transform: rotate(-20deg);
-      transform: rotate(-20deg);
-            z-index: 0;
-
+      @include star-rotation(-20deg);
+      z-index: 0;
     }
     .bg-star:nth-of-type(3) {
-      position: absolute;
       left: -40%;
       top: 400px;
       height: 1500px;
       opacity: .04;
-      -ms-transform: rotate(20deg);
-      -webkit-transform: rotate(20deg);
-      transform: rotate(20deg);
-            z-index: 0;
-
+      @include star-rotation(20deg);
+      z-index: 0;
     }
   }
 
   &.capitol-building{
-    background: #fff url(/images/capitol_building.png) right bottom no-repeat;
+    background: #fff url('/images/capitol_building.png') right bottom no-repeat;
   }
 }
 
@@ -417,21 +281,76 @@
     border: none;
   }
 }
+
+.homepage-ribbon{
+  padding-top: 20px;
+  padding-bottom: 20px;
+
+  >div .mini-panel{
+    padding-right:10px;
+  }
+  >div:last-child .mini-panel{
+    padding-right: 0
+  }
+
+
+  .mini-panel{
+    padding-left:110px;
+    background:transparent url('') 5px 0 no-repeat;
+    letter-spacing: .2px;
+    line-height: 22px;
+    font-size: 16px;
+    background-size:90px 90px;
+
+    @include tablet-minus{
+      margin-top: 8px;
+      font-size: 18px;
+      min-height:92px
+    }
+  }
+
+  .mini-panel-text{
+    background-image: url('/images/home_icon_star.svg');
+  }
+  .mini-panel-call{
+    background-image: url('/images/home_icon_map.svg');
+  }
+  .mini-panel-state{
+    background-image: url('/images/home_icon_phone.svg');
+  }
+
+
+}
+
+
+
 // call-box is where the number of calls is displayed
 // note line-height plays a part in creating their symmetry
-.call-box{}
-.call-box .col-sm-1{ 
-  font-size: 45px;
-  line-height: 45px;
-  font-weight: 400;
-  color: $color-dark-red;
-  width: 100px;
-}
-.call-box .col-sm-2{ 
-  width: 125px;
-  padding-right:0;
-  @include tablet{
-    width: 400px;
+.call-box{
+  @include phone{
+    br{display:none}
+    .col-sm-1{
+      padding-right:0;
+    }
+  }
+
+  .col-sm-1{
+    font-weight: 400;
+    color: $color-dark-red;
+
+    @include tablet-plus{
+      line-height: 45px;
+      font-size: 45px;
+      width: 100px;
+
+    }
+  }
+  .col-sm-2{
+    width: 125px;
+    padding-right:0;
+    @include tablet{
+      width: 400px;
+    }
   }
 }
 .call-box-thin{
@@ -461,7 +380,7 @@
 // only white link I know of consider moving
 .white-link{
   color: #fff;
-  font-size: 15px;
+  font-size: 18px;
   text-decoration: underline;
   &:visited {
     color: #fff;
@@ -469,36 +388,40 @@
   &:hover {
   }
 }
-.remove-padding-photo{
-  padding: 0 !important;
-}
-.remove-padding-photo .remove-padding-text{
-  padding-left: 5px !important;
-  @include tablet{
-    padding-left: 15px !important;;
-  }
-  @include phone{
-    padding-left: 15px !important;;
-  }
-}
 
-.remove-padding-photo-small{
-  @include tablet{
-    padding: 0 !important;
-  }
-  @include phone{
-    padding: 0 !important;
-  }
-}
-
-.js-legislators{ 
+.js-legislators{
   padding-top:45px;
-  h2{
-    padding-top: 4px;
-    font-size: 24px;
-    font-weight: 400;
+
+  .background-square{
+    height: 100px;
+    width: 100px;
+    background-size: 100%;
+    background:$color-grey url() center center no-repeat;
     @include small-desktop{
-      font-size: 20px;
+      height: 90px;
+      width: 90px;
+    }
+    @include phone{
+      padding: 0 5px 0 0;
+    }
+  }
+
+  &.newest-leaders{
+    .new-legislator{
+      border-right: 1px solid #b7b7b7;
+      &:nth-child(3n) {
+        border:none;
+      }
+    }
+  }
+
+  h3{
+    // padding-top: 4px;
+    font-size: 22px;
+    font-weight: 400;
+    white-space: nowrap;
+    @include small-desktop{
+      font-size: 16px;
     }
     @include small-desktop{
       font-size: 20px;
@@ -511,38 +434,98 @@
   h4{
     color: $color-brand;
     margin-top:7px;
-    font-size: 17px;
+    font-size: 15px;
     @include small-desktop{
-      font-size: 14px;
+      font-size: 13px;
     }
     @include phone{
       font-size: 14px;
     }
   }
 }
-.col-xs-12.bottom-margin{
-  margin-bottom:15px;
-}
-.background-sqaure{
-  height: 100px;
-  width: 100px;
-  background-image: url("../images/temp-img/T000474.jpg");
-  background-repeat: no-repeat;
-  background-position: center;
-  background-size: 100%;
-  background-color:$color-grey;
-  @include small-desktop{
-    height: 90px;
-    width: 90px;
+
+.legislators-listing{
+
+  h3{
+    font-size:20px;
+    white-space: nowrap;
+  }
+  h4{
+    font-size: 16px;
   }
 
+  .fa{
+    display: inline-block;
+    margin-right:1px
+  }
+
+
+  .stateface-replace{
+    display:initial;
+  }
+  .stateface-replace:before{
+    position:relative;
+  }
+  .background-square{
+    border:4px solid #b0aeaf;
+  }
+
+  .with-us-true{
+    .stateface-replace{
+    }
+    .fa-check-square-o{
+      display:inline-block;
+    }
+    .fa-ban{
+      display:none;
+    }
+    .btn-targets{
+      background-color: $color-dossier-green;
+    }
+  }
+  .with-us-false{
+    .stateface-replace{
+    }
+    .fa-check-square-o{
+      display:none;
+    }
+    .fa-ban{
+      display:inline-block;
+    }
+    .btn-targets{
+      background-color: $color-dossier-red;
+    }
+  }
 }
-.mayday-quotes p{
-  margin:45px 0 30px;
+
+
+.col-xs-12.bottom-margin, .col-xs-11.bottom-margin{
+  margin-bottom:15px;
+}
+
+.mayday-quotes{
+  p{
+    margin:45px 0 30px;
+  }
+
+  @include tablet-minus{
+    margin-top:20px;
+    margin-bottom:30px;
+    p{
+      margin:0 0 15px;
+      padding:0;
+    }
+    img{
+      margin-bottom:20px;
+    }
+  }
 }
 .chart-holder {
   height: 400px;
   padding-right:0;
+  @include phone{
+    padding-right: 15px;
+  }
 }
 .highcharts-tooltip>span {
   background: rgb(255,255,255);
@@ -550,4 +533,24 @@
   border-radius: 3px;
   box-shadow: 1px 1px 2px #888;
   padding: 15px;
+}
+.chart-holder.non-chart {
+  opacity: 0;
+  -webkit-transition: opacity 450ms;
+  -moz-transition: opacity 450ms;
+  -ms-transition: opacity 450ms;
+  transition: opacity 450ms;
+  &.loaded{
+    opacity: 1;
+  }
+
+  @include phone{
+    height: auto;
+  }
+
+  p{
+    font-weight: 300;
+    font-size: 20px;
+    line-height: 30px;
+  }
 }

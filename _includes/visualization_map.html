@@ -1,29 +1,22 @@
-<!--
-This file includes:
-- HTML for Map
-- CSS for Map
-- JavaScript for
-  - jQuery
-  - VoxelMap
-  - Initializing VoxelMap
--->
+<div id="voxel-map" class="voxel-map" style="{{include.styles}}">
+<div class="row">
+  <h2>State of Reform Map</h2>
+  <select class="md-select">
+    <option value="" chamber="both">Select a bill to see the support level</option>
+    <option value="" chamber="both">All</option>
+    <option value="hr20-114" chamber="house">H.R.20 - Government By the People Act of 2015</option>
+    <option value="hr424-114" chamber="house">H.R.424 - Empowering Citizens Act</option>
+  </select>
+</div>
 
-<div id="voxel-map" class="voxel-map">
-
-<select>
-<option value="" chamber="both">All</option>
-<option value="hr20-114" chamber="house">H.R.20 - Government By the People Act of 2015</option>
-<option value="hr424-114" chamber="house">H.R.424 - Empowering Citizens Act</option>
-</select>
-
-<div class="loading">Please wait...</div>
+<div id="map-message" class="loading">Please wait...</div>
 
 <div class="voxels" style="opacity: 0">
   <div class="voxel-popover">
     <div class="left">
       <img class="photo" src="https://s3.amazonaws.com/audio.mayday.us/congress-photos/99x120/B000944.jpg" onload="this.style.opacity = 1">
       <span class="stateface stateface-replace"></span>
-      
+
       <div class="code">CT-20</div>
     </div>
 
@@ -69,31 +62,6 @@ This file includes:
   </div>
 
   <div class="color">
-    <div class="voxel" color="gray">
-      <svg viewBox="0 0 166 166">
-        <g>
-          <polygon
-            class="front"
-            points="166,0 166,158 22,158 22,0"
-          />
-
-          <polygon
-            class="left"
-            points="22.5,158 0,166 0,8 22.5,0"
-          />
-
-          <polygon
-            class="bottom"
-            points="166,157.5 144,166 0,166 22.5,157.5"
-          />
-        </g>
-      </svg>
-    </div>
-
-    <p>non-supporter</p>
-  </div>
-
-  <div class="color">
     <div class="voxel" color="green">
       <svg viewBox="0 0 166 166">
         <g>
@@ -117,6 +85,33 @@ This file includes:
 
     <p>Supporter</p>
   </div>
+
+  <div class="color">
+    <div class="voxel" color="gray">
+      <svg viewBox="0 0 166 166">
+        <g>
+          <polygon
+            class="front"
+            points="166,0 166,158 22,158 22,0"
+          />
+
+          <polygon
+            class="left"
+            points="22.5,158 0,166 0,8 22.5,0"
+          />
+
+          <polygon
+            class="bottom"
+            points="166,157.5 144,166 0,166 22.5,157.5"
+          />
+        </g>
+      </svg>
+    </div>
+
+    <p>Non-supporter</p>
+  </div>
+
+
 </div>
 
 </div>
@@ -125,44 +120,47 @@ This file includes:
 
 <script type="text/template" id="template-voxel">
 <svg
-  viewBox="0 0 25 26"
+  viewBox="0 0 19 22"
   >
   <g>
     <polygon
       class="front"
-      points="4,0 25,0 25,23 4,23"
+      points="4,0 19,0 19,19 4,19"
     />
 
     <polygon
       class="left"
-      points="0,3 4.1,0 4.1,23 0,26"
+      points="0,3 4.1,0 4.1,19 0,22"
     />
     <polygon
       class="bottom"
-      points="4.1,22.9 25,22.9 22,26 0,26"
+      points="4.1,18.9 25,18.9 22,22 0,22"
     />
 
     <polygon
       class="border-top"
-      points="2,0 25,0 25,1 0,1"
+      points="4,0 19,0 19,1 4,1"
     />
 
     <polygon
       class="border-left"
-      points="0,0 4,0 4,26 0,26"
+      points="4,1 5,1 5,19 4,19"
     />
 
     <polygon
       class="border-bottom"
-      points="0,23 25,23 25,26 0,26"
+      points="4,19 19,19 19,22 4,22"
+    />
+
+    <polygon
+      class="border-bottom-angled"
+      points="4.1,18.9 0,22 1,22 4.1,22"
     />
 
     <polygon
       class="border-right"
-      points="24,0 25,0 25,26 24,26"
+      points="18,0 19,0 19,22 18,22"
     />
-<!--
--->
   </g>
 </svg>
 </script>
@@ -172,10 +170,15 @@ This file includes:
 <script src="/js/visualization_map.js"></script>
 <script>
 $(function() {
-  var voxelMap = new VoxelMap({
-    $el: $('#voxel-map'),
-    url: '{{site.services_url}}/legislators/supporters_map.json',
-  });
+  if( /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ) {
+   $('#map-message').css('display','none');
+  }else{
+    var voxelMap = new VoxelMap({
+      $el: $('#voxel-map'),
+      url: '{{site.services_url}}/legislators/supporters_map.json',
+    });
+  }
+
 });
 </script>
 
